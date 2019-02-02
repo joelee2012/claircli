@@ -1,0 +1,11 @@
+requests
+docker
+Jinja2
+pyyaml
+six
+colorlog
+mock
+responses
+pylint
+pycodestyle
+pytest-cov

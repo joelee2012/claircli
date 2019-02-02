@@ -1,0 +1,74 @@
+[
+	{
+		"tag": "latest",
+		"registry": "registry.example.com",
+		"name": "registry.example.com/org/image-name",
+		"repository": "org/image-name"
+	},
+	{
+		"tag": "latest",
+		"registry": "registry-1.docker.io",
+		"name": "registry/org/image-name",
+		"repository": "library/registry/org/image-name"
+	},
+	{
+		"tag": "latest",
+		"registry": "registry-1.docker.io",
+		"name": "registry/image-name",
+		"repository": "library/registry/image-name"
+	},
+	{
+		"tag": "latest",
+		"registry": "registry-1.docker.io",
+		"name": "image-name",
+		"repository": "library/image-name"
+	},
+	{
+		"tag": "version",
+		"registry": "registry.example.com",
+		"name": "registry.example.com/org/image-name:version",
+		"repository": "org/image-name"
+	},
+	{
+		"tag": "version",
+		"registry": "registry-1.docker.io",
+		"name": "registry/org/image-name:version",
+		"repository": "library/registry/org/image-name"
+	},
+	{
+		"tag": "version",
+		"registry": "registry-1.docker.io",
+		"name": "registry/image-name:version",
+		"repository": "library/registry/image-name"
+	},
+	{
+		"tag": "version",
+		"registry": "registry-1.docker.io",
+		"name": "image-name:version",
+		"repository": "library/image-name"
+	},
+	{
+		"tag": "version",
+		"registry": "registry.example.com:8080",
+		"name": "registry.example.com:8080/org/image-name:version",
+		"repository": "org/image-name"
+	},
+	{
+		"tag": "version",
+		"registry": "registry.example.com:8080",
+		"name": "registry.example.com:8080/image-name:version",
+		"repository": "image-name"
+	},
+	{
+		"tag": "latest",
+		"registry": "registry.example.com:8080",
+		"name": "registry.example.com:8080/image-name",
+		"repository": "image-name"
+	},
+	{
+		"tag": "latest",
+		"registry": "registry.example.com:8080",
+		"name": "registry.example.com:8080/IMAGE-name",
+		"repository": "IMAGE-name"
+	}
+]

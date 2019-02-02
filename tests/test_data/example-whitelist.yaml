@@ -1,0 +1,8 @@
+common:
+  CVE-2017-6055: XML
+  CVE-2017-5586: OpenText
+ubuntu:
+  CVE-2017-5230: XSX
+  CVE-2017-5586: OpenText
+alpine:
+  CVE-2017-3261: SE
