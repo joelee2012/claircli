@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "name": "registry.example.com/org/image-name",
+  "tag": "latest",
+  "architecture": "amd64",
+  "fsLayers": [
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:0bcd57bf8f48183e36b7473e8f83c7557c3f5a3cd4d8ff5cfac702e06eb4e830"
+    },
+    {
+      "blobSum": "sha256:453a41ade285600d109fc9c4cde15219b32f4d164aecc20987e43fc7c47e121a"
+    },
+    {
+      "blobSum": "sha256:3e8a35d52f29e0bc32f0a348224de0fc2d081360d9d14a0d2c3e812698573099"
+    },
+    {
+      "blobSum": "sha256:6b128ed3181a84df14cd0a973dd9bb476423094a5b1f3a0ad65345e39a0ada54"
+    },
+    {
+      "blobSum": "sha256:d56abbcdbeee9b386306f883cb2c3b8454b85ece697fd40a14935af59c50c84a"
+    },
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+    },
+    {
+      "blobSum": "sha256:4fe2ade4980c2dda4fc95858ebb981489baec8c1e4bd282ab1c3560be8ff9bde"
+    }
+  ],
+  "history": [],
+  "signatures": [
+    {
+      "header": {
+        "jwk": {
+          "crv": "P-256",
+          "kid": "OD6I:6DRK:JXEJ:KBM4:255X:NSAA:MUSF:E4VM:ZI6W:CUN2:L4Z6:LSF4",
+          "kty": "EC",
+          "x": "3gAwX48IQ5oaYQAYSxor6rYYc_6yjuLCjtQ9LUakg4A",
+          "y": "t72ge6kIA1XOjqjVoEOiPPAURltJFBMGDSQvEGVB010"
+        },
+        "alg": "ES256"
+      },
+      "signature": "XREm0L8WNn27Ga_iE_vRnTxVMhhYY0Zst_FfkKopg6gWSoTOZTuW4rK0fg_IqnKkEKlbD83tD46LKEGi5aIVFg",
+      "protected": "eyJmb3JtYXRMZW5ndGgiOjY2MjgsImZvcm1hdFRhaWwiOiJDbjAiLCJ0aW1lIjoiMjAxNS0wNC0wOFQxODo1Mjo1OVoifQ"
+    }
+  ]
+}
