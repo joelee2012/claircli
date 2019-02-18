@@ -47,7 +47,7 @@ class ClairCmdTestBase(unittest.TestCase):
         responses.add(responses.DELETE, '%s/%s' %
                       (self.v1_analyze_url, self.layers[0]))
         responses.add(responses.POST, self.v1_analyze_url)
-        with open('tests/test_data/origin_vulnerabilities.json', 'r+b') as f:
+        with open('tests/test_data/origin_vulnerabilities.json') as f:
             self.origin_data=json.load(f)
         responses.add(responses.GET, '%s/%s?features&vulnerabilities' %
                       (self.v1_analyze_url, self.layers[-1]), json = self.origin_data)
