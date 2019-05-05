@@ -45,9 +45,9 @@ class Report(object):
 
         def is_approved(vulne, feature):
             vname = vulne['Name'].replace(':', '-')
-            return (vname in approved and feature['Name'] == approved[vname]) \
-                or (SEVERITY_INDEX[vulne['Severity']]
-                    > SEVERITY_INDEX[threshold])
+            return (vname in approved and feature[
+                'Name'] == approved[vname]) or (SEVERITY_INDEX[vulne[
+                    'Severity']] > SEVERITY_INDEX[threshold])
 
         for feature in layer_data.get('Features', []):
             for vulnerability in feature.get('Vulnerabilities', []):
@@ -62,8 +62,7 @@ class Report(object):
                         'FeatureVersion': feature['Version'],
                         'AddedBy': feature['AddedBy'],
                         'Status': status}
-                for key in ['Name', 'NamespaceName', 'Description',
-                            'Link', 'Severity', 'FixedBy']:
+                for key in vulnerability.keys():
                     temp[key] = vulnerability[key]
                 vulnerabilities.append(temp)
         data['Vulnerabilities'] = sorted(
