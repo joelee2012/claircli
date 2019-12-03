@@ -1,21 +1,36 @@
 # -*- coding: utf-8 -*-
-
-
+import copy
 import json
 import logging
-import re
 import os
-from os.path import join, abspath, dirname
+import re
 from collections import defaultdict
+from os.path import abspath, dirname, join
 from pprint import pformat
-from jinja2 import Environment, FileSystemLoader
 
+import yaml
+from jinja2 import Environment, FileSystemLoader
 
 logger = logging.getLogger(__name__)
 SEVERITIES = ['Defcon1', 'Critical', 'High', 'Medium',
               'Low', 'Negligible', 'Unknown']
 SEVERITY_INDEX = {key: index for index, key in enumerate(SEVERITIES, start=1)}
 WORK_DIR = os.getcwd()
+
+
+class WhiteList(object):
+    def __init__(self, filename):
+        self.filename = filename
+        with open(filename) as file_:
+            self.data = yaml.safe_load(file_)
+
+    def get(self, key, default=None):
+        approved = dict(self.data.get('common', {}))
+        approved.update(self.data.get(key, {}))
+        return approved or default
+
+    def __getitem__(self, key):
+        return self.get(key)
 
 
 class Report(object):
@@ -38,33 +53,35 @@ class Report(object):
         data = {
             'ImageName': self.source['ImageName'],
             'NamespaceName': namespace,
-            'Unapproved': [],
-            'Approved': [],
+            'Unapproved': set(),
+            'Approved': set(),
             'Severity': defaultdict(int)}
         vulnerabilities = []
 
         def is_approved(vulne, feature):
             vname = vulne['Name'].replace(':', '-')
-            return (vname in approved and feature[
-                'Name'] == approved[vname]) or (SEVERITY_INDEX[vulne[
-                    'Severity']] > SEVERITY_INDEX[threshold])
+            return (vname in approved and
+                    feature['Name'] == approved[vname]) or \
+                (SEVERITY_INDEX[vulne['Severity']] > SEVERITY_INDEX[threshold])
 
         for feature in layer_data.get('Features', []):
-            for vulnerability in feature.get('Vulnerabilities', []):
-                if is_approved(vulnerability, feature):
+            for vulner in feature.get('Vulnerabilities', []):
+                if is_approved(vulner, feature):
                     status = 'Approved'
                 else:
                     status = 'Unapproved'
-                data[status].append(vulnerability['Name'])
-                data['Severity'][vulnerability['Severity']] += 1
+                data[status].add(vulner['Name'])
+                data['Severity'][vulner['Severity']] += 1
                 data['Severity']['Total'] += 1
                 temp = {'FeatureName': feature['Name'],
                         'FeatureVersion': feature['Version'],
                         'AddedBy': feature['AddedBy'],
                         'Status': status}
-                for key in vulnerability.keys():
-                    temp[key] = vulnerability[key]
+                for key in vulner.keys():
+                    temp[key] = vulner[key]
                 vulnerabilities.append(temp)
+        for status in ['Approved', 'Unapproved']:
+            data[status] = list(data[status])
         data['Vulnerabilities'] = sorted(
             vulnerabilities, key=lambda v: SEVERITY_INDEX[v['Severity']])
         self.data = data
@@ -73,12 +90,11 @@ class Report(object):
     def get_report_path(cls, image_name, ext):
         report_name = 'clair-' + re.sub(r'/|:', '_', image_name) + ext
         report_path = join(WORK_DIR, report_name)
-        return image_name, report_path
+        return report_path
 
     def to_html(self):
-        image_name, html_report = Report.get_report_path(
-            self.source['ImageName'], '.html')
-        logger.info('Generate html report for %s', image_name)
+        html_report = Report.get_report_path(self.source['ImageName'], '.html')
+        logger.info('Generate html report for %s', self.source['ImageName'])
         j2_env = Environment(loader=FileSystemLoader(
             self.templates), trim_blocks=True)
         template = j2_env.get_template('html-report.j2')
@@ -87,11 +103,10 @@ class Report(object):
         logger.info('Location: %s', html_report)
 
     def to_json(self):
-        image_name, json_report = Report.get_report_path(
-            self.source['ImageName'], '.json')
-        logger.info('Generate json report for %s', image_name)
+        json_report = Report.get_report_path(self.source['ImageName'], '.json')
+        logger.info('Generate json report for %s', self.source['ImageName'])
         with open(json_report, 'w') as file_:
-            json.dump(self.data, file_)
+            json.dump(self.data, file_, indent=2)
         logger.info('Location: %s', json_report)
 
     def to_xml(self):
