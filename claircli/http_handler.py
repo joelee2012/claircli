@@ -5,6 +5,9 @@ import logging
 import os
 from os.path import join, relpath
 from six.moves.SimpleHTTPServer import SimpleHTTPRequestHandler
+from functools import partial
+from threading import Thread
+from six.moves.BaseHTTPServer import HTTPServer
 
 logger = logging.getLogger(__name__)
 
@@ -28,3 +31,12 @@ class PathHTTPHandler(SimpleHTTPRequestHandler):
                      self.client_address[0],
                      self.log_date_time_string(),
                      format % args)
+
+
+def start_http_server(port, path):
+    logger.info('Starting local http server')
+    handler = partial(PathHTTPHandler, serve_path=path)
+    thread = Thread(target=HTTPServer(('', port), handler).serve_forever)
+    thread.daemon = True
+    thread.start()
+    logger.info('Local http server serving at port: %s', port)
