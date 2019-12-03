@@ -1,39 +1,36 @@
 # -*- coding: utf-8 -*-
 
-import logging
+import atexit
 import json
+import logging
 import os
 import random
 import re
 import shutil
 import tarfile
+import tempfile
+import weakref
 from collections import defaultdict
-from os.path import join, isfile
-from threading import Thread
-from functools import partial
+from os.path import isfile, join
+
 import docker
 from six.moves.BaseHTTPServer import HTTPServer
-from .http_handler import PathHTTPHandler
-from .utils import mkpdirs, request_and_check, request
+
+from .http_handler import PathHTTPHandler, start_http_server
+from .utils import mkpdirs, request, request_and_check
 
 DOCKER_HUP_REGISTRY = 'registry-1.docker.io'
 logger = logging.getLogger(__name__)
 
 
 class LocalRegistry(object):
-    tmp_folder = '/tmp/claircli'
+    tmp_folder = tempfile.mkdtemp(prefix='claircli-')
+    atexit.register(shutil.rmtree, tmp_folder)
 
-    def __init__(self, domain):
+    def __init__(self, ipaddr):
         port = random.randint(10000, 15000)
-        self.url = 'http://{}:{}'.format(domain, port)
-        mkpdirs(self.tmp_folder)
-        logger.info('Start http server in local')
-        httpd = HTTPServer(('', port), partial(
-            PathHTTPHandler, serve_path=self.tmp_folder))
-        thread = Thread(target=httpd.serve_forever)
-        thread.daemon = True
-        thread.start()
-        logger.info('Serving at port: %s', port)
+        self.url = 'http://{}:{}'.format(ipaddr, port)
+        start_http_server(port, self.tmp_folder)
         self._client = docker.from_env(timeout=360)
 
     def get_auth(self, repository):
@@ -44,26 +41,24 @@ class LocalRegistry(object):
                          'blobs', layer, 'layer.tar'])
 
     def get_manifest(self, image):
-        manifest_json = join(
-            self.tmp_folder, image.repository, 'manifests', image.tag)
+        repo_dir = join(self.tmp_folder, image.repository)
+        manifest_json = join(repo_dir, 'manifests', image.tag)
         if not isfile(manifest_json):
-            blobs_dir = join(self.tmp_folder, image.repository, 'blobs')
-            manifest_dir = join(self.tmp_folder, image.repository, 'manifests')
-            mkpdirs(blobs_dir)
-            mkpdirs(manifest_dir)
-            image_tar = join(self.tmp_folder, image.repository, 'image.tar')
-            self.save_image(image.name, image_tar)
-            tar = tarfile.open(image_tar)
-            tar.extractall(blobs_dir)
-            tar.close()
-            shutil.move(join(blobs_dir, 'manifest.json'), manifest_json)
+            for d in ['blobs', 'manifests']:
+                mkpdirs(join(repo_dir, d))
+            blobs_dir = join(repo_dir, 'blobs')
+            image_tar = join(repo_dir, 'image.tar')
+            self.save_image(image, image_tar)
+            with tarfile.open(image_tar) as tar:
+                tar.extractall(blobs_dir)
             os.remove(image_tar)
+            shutil.move(join(blobs_dir, 'manifest.json'), manifest_json)
         with open(manifest_json) as file_:
             return json.load(file_)
 
-    def save_image(self, image_name, path):
-        logger.debug('Saving image [%s] to %s', image_name, path)
-        image = self._client.images.get(image_name)
+    def save_image(self, image, path):
+        logger.debug('Saving %s to %s', image, path)
+        image = self._client.images.get(image.name)
         with open(path, 'w+b') as file_:
             for chunk in image.save():
                 file_.write(chunk)
@@ -74,8 +69,8 @@ class LocalRegistry(object):
 
 class RemoteRegistry(object):
     tokens = defaultdict(dict)
-    token_url_pattern = re.compile(r'Bearer realm="(?P<realm>[^"]+)".*'
-                                   r'service="(?P<service>[^"]+).*')
+    token_pattern = re.compile(r'Bearer realm="(?P<realm>[^"]+)".*'
+                               r'service="(?P<service>[^"]+).*')
 
     def __init__(self, domain):
         self.domain = domain
@@ -92,7 +87,7 @@ class RemoteRegistry(object):
             elif resp.status_code == 200:
                 self.tokens[self.domain][repository] = ''
             else:
-                matcher = self.token_url_pattern.match(
+                matcher = self.token_pattern.match(
                     resp.headers['WWW-Authenticate'])
                 params = {'service': matcher.group('service'),
                           'client_id': 'claircli',
@@ -116,22 +111,20 @@ class RemoteRegistry(object):
     def get_blobs_url(self, image, layer):
         return '/'.join([self.url, image.repository, 'blobs', layer])
 
-    def find_images(self, repository=r'', tag=r'^latest$'):
+    def find_images(self, repository, tag):
         if self.domain == DOCKER_HUP_REGISTRY:
             logger.error('Not support to find images for docker hup')
             raise ValueError('Not support to find images for docker hup')
         resp = request_and_check('GET', self.url + '_catalog',
                                  headers={'Authorization': self.get_auth('')})
-        repo_pattern = re.compile(repository)
-        tag_pattern = re.compile(tag)
+        repo_pattern = re.compile(repository or r'.*')
+        tag_pattern = re.compile(tag or r'.*')
         for repo in resp.json().get('repositories', []):
             if not repo_pattern.search(repo):
                 continue
             headers = {'Authorization': self.get_auth(repository)}
-            resp = request_and_check('GET',
-                                     '{}{}/tags/list'.format(self.url, repo),
-                                     headers=headers)
-            tags = resp.json().get('tags', [])
-            for tag_ in tags:
+            tag_url = '{}{}/tags/list'.format(self.url, repo)
+            resp = request_and_check('GET', tag_url, headers=headers)
+            for tag_ in resp.json().get('tags', []):
                 if tag_pattern.search(tag_):
                     yield '{}/{}:{}'.format(self.domain, repo, tag_)

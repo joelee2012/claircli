@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-
-
 import logging
 import os
 from pprint import pformat
-from requests import request
 
+from requests import request
 
 logger = logging.getLogger(__name__)
 

@@ -3,8 +3,9 @@
 
 import logging
 from pprint import pformat
+
 from .report import Report
-from .utils import request_and_check, request
+from .utils import request, request_and_check
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class Clair(object):
 
     def __init__(self, url):
         self.url = url
-        self._v1_analyze_url = '{}/v1/layers'.format(url)
+        self.api_v1_url = '{}/v1/layers'.format(url)
 
     def _make_layer_data(self, layer, parent, image):
         data = {'Layer': {
@@ -27,27 +28,22 @@ class Clair(object):
         return data
 
     def analyze_image(self, image):
-        logger.info('Analyze image %s', image.name)
-        layers = image.layers
-        logger.info('Remove old analysis data for %s from clair',
-                    image.name)
-        request('DELETE', '{}/{}'.format(self._v1_analyze_url, layers[0]))
-        layers_length = len(layers)
+        logger.info('Analyzing %s', image)
+        request('DELETE', '{}/{}'.format(self.api_v1_url, image.layers[0]))
+        layers_length = len(image)
         parent = ''
-        for index, layer in enumerate(layers, start=1):
+        for index, layer in enumerate(image.layers, start=1):
             logger.info('Push layer [%s/%s]: %s', index, layers_length, layer)
             layer_data = self._make_layer_data(layer, parent, image)
             parent = layer
-            logger.debug('Layer data: %s', pformat(layer_data))
-            request_and_check('POST', self._v1_analyze_url, json=layer_data)
-        return layers
+            request_and_check('POST', self.api_v1_url, json=layer_data)
+        return image.layers
 
     def get_report(self, image):
-        logger.info('Fetch vulnerabilities for %s', image.name)
+        logger.info('Fetch vulnerabilities for %s', image)
         report_url = '{}/{}?features&vulnerabilities'.format(
-            self._v1_analyze_url, image.layers[-1])
-        resp = request_and_check('GET', report_url)
-        vulnerabilities = resp.json()
+            self.api_v1_url, image.layers[-1])
+        vulnerabilities = request_and_check('GET', report_url).json()
         features = vulnerabilities.get('Layer', {}).get('Features')
         if features:
             vulnerabilities['ImageName'] = image.name
