@@ -72,9 +72,9 @@ class RemoteRegistry(object):
     token_pattern = re.compile(r'Bearer realm="(?P<realm>[^"]+)".*'
                                r'service="(?P<service>[^"]+).*')
 
-    def __init__(self, domain, scheme):
+    def __init__(self, domain, insecure_registries=frozenset()):
         self.domain = domain
-        self.scheme = scheme
+        self.scheme = 'http' if domain in insecure_registries else 'https'
         self.url = '{}://{}/v2/'.format(self. scheme, self.domain)
 
     def __str__(self):

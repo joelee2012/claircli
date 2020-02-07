@@ -47,7 +47,8 @@ optional arguments:
                         ip address of local host
   -r, --regex           if set, repository and tag of images will be treated
                         as regular expression
-  -H, --http            use http instead of https to access the docker registry (HTTPS is default)
+  -i, --insecure-registries
+                        list of registries that should be accessed insecurely
 
 Examples:
 

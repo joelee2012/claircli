@@ -12,21 +12,21 @@ logger = logging.getLogger(__name__)
 
 class Image(object):
 
-    def __init__(self, name, scheme, registry=None):
+    def __init__(self, name, registry=None, insec_regs=frozenset()):
         self.name = name
         self._layers = []
         self._manifest = None
         reg, repo, tag = self.parse_id(name)
         self.repository = repo
         self.tag = tag or 'latest'
-        self.scheme = scheme
         if reg == INDEX_NAME:
             reg = DOCKER_HUP_REGISTRY
             self.repository = 'library/{}'.format(repo)
         if isinstance(registry, LocalRegistry):
             self.registry = registry
         else:
-            self.registry = RemoteRegistry(reg, self.scheme)
+            self.registry = RemoteRegistry(reg,
+                                           insecure_registries=insec_regs)
 
     @classmethod
     def parse_id(cls, name):
