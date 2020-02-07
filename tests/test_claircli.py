@@ -58,6 +58,7 @@ class ClairCmdTestBase(unittest.TestCase):
                       (self.v1_analyze_url, self.layers[-1]),
                       json=self.origin_data)
         self.html = Report.get_report_path(self.name, '.html')
+        self.scheme = 'https'
 
     def tearDown(self):
         RemoteRegistry.tokens = defaultdict(dict)
@@ -85,7 +86,7 @@ class TestImage(ClairCmdTestBase):
         with open('tests/test_data/images.json') as f:
             images = json.load(f)
         for expected in images:
-            image = Image(expected['name'])
+            image = Image(expected['name'], self.scheme)
             self.assertEqual(image.name, expected['name'])
             self.assertEqual(image.repository, expected['repository'])
             self.assertEqual(image.tag, expected['tag'])
@@ -93,7 +94,7 @@ class TestImage(ClairCmdTestBase):
 
     @responses.activate
     def test_manifest(self):
-        image = Image(self.name)
+        image = Image(self.name, self.scheme)
         self.assertEqual(image.manifest, self.manifest)
         self.assert_called_with_url()
 
@@ -101,7 +102,7 @@ class TestImage(ClairCmdTestBase):
     def test_manifest_local(self, mock_docker):
         mock_docker_client(mock_docker)
         registry = LocalRegistry('localhost')
-        image = Image(self.name, registry)
+        image = Image(self.name, self.scheme, registry)
         with open('tests/test_data/manifest.json') as file_:
             manifest = json.load(file_)
         self.assertEqual(image.manifest, manifest)
@@ -110,7 +111,7 @@ class TestImage(ClairCmdTestBase):
     def test_layers_local(self, mock_docker):
         mock_docker_client(mock_docker)
         registry = LocalRegistry('localhost')
-        image = Image(self.name, registry)
+        image = Image(self.name, self.scheme, registry)
         with open('tests/test_data/manifest.json') as file_:
             manifest = json.load(file_)
         self.assertEqual(image.layers, [e.replace(
@@ -122,14 +123,14 @@ class TestImage(ClairCmdTestBase):
             manifest = json.load(f)
         responses.replace(responses.GET, self.manifest_url,
                           json=manifest, status=200)
-        image = Image(self.name)
+        image = Image(self.name, self.scheme)
         self.assertEqual(image.layers, [e['blobSum']
                                         for e in manifest['fsLayers']][::-1])
         self.assert_called_with_url()
 
     @responses.activate
     def test_layers_v2(self):
-        image = Image(self.name)
+        image = Image(self.name, self.scheme)
         self.assertEqual(image.layers,
                          [e['digest'] for e in self.manifest['layers']])
         self.assert_called_with_url()
@@ -140,7 +141,7 @@ class TestClair(ClairCmdTestBase):
     @responses.activate
     def test_analyze_remote_image(self):
         clair = Clair(self.clair_url)
-        image = Image(self.name)
+        image = Image(self.name, self.scheme)
         layers = clair.analyze_image(image)
         self.assertEqual(layers, self.layers)
         self.assert_called_with_url()
@@ -158,7 +159,7 @@ class TestClair(ClairCmdTestBase):
         mock_docker_client(mock_docker)
         clair = Clair(self.clair_url)
         registry = LocalRegistry('localhost')
-        image = Image(self.name, registry)
+        image = Image(self.name, self.scheme, registry)
         responses.add(responses.DELETE, '%s/%s' %
                       (self.v1_analyze_url, image.layers[0]))
         layers = clair.analyze_image(image)
