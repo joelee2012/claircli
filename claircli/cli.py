@@ -31,6 +31,10 @@ class ClairCli(object):
     # clair is running at http://localhost:6060
     claircli example.reg.com/myimage1:latest example.reg.com/myimage2:latest
 
+    # analyze image in insecure registry
+    # clair is running at http://localhost:6060
+    claircli -i example.reg.com example.reg.com/myimage1:latest
+
     # analyze and output report to html
     # clair is running at https://example.clair.com:6060
     claircli -c https://example.clair.com:6060 example.reg.com/myimage1:latest
@@ -92,9 +96,17 @@ class ClairCli(object):
             help='if set, repository and tag of images will be '
             'treated as regular expression')
         parser.add_argument(
-            'images', nargs='+', help='docker images or regular expression')
+            '-i', '--insecure-registry', action='append',
+            dest='insec_regs', metavar='registry', default=[],
+            help='domain of insecure registry')
+        parser.add_argument(
+            'images', nargs='+', metavar='image',
+            help='docker images or regular expression')
         parser.set_defaults(func=self.analyze_image)
         self.args = parser.parse_args()
+        if self.args.local_ip and self.args.insec_regs:
+            parser.error('argument --local-ip: not allowed with'
+                         ' argument --insecure-registry')
         self.setup_logging()
 
     def setup_logging(self):
@@ -126,6 +138,7 @@ class ClairCli(object):
     def analyze_image(self):
         args = self.args
         registry = None
+        RemoteRegistry.insec_regs = set(args.insec_regs)
         if args.local_ip:
             registry = LocalRegistry(args.local_ip)
         elif args.regex:

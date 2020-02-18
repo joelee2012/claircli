@@ -193,7 +193,7 @@ class TestClairCli(ClairCmdTestBase):
 
     @responses.activate
     def test_analyze_images(self):
-        with patch('sys.argv', ['claircli.py',  '-c',
+        with patch('sys.argv', ['claircli',  '-c',
                                 self.clair_url, self.name]):
             cli = ClairCli()
             cli.run()
@@ -216,7 +216,7 @@ class TestClairCli(ClairCmdTestBase):
                       (self.v1_analyze_url, layers[0]))
         responses.add(responses.GET, '%s/%s?features&vulnerabilities' %
                       (self.v1_analyze_url, layers[-1]), json=self.origin_data)
-        with patch('sys.argv', ['claircli.py', '-l', 'localhost',
+        with patch('sys.argv', ['claircli', '-l', 'localhost',
                                 '-c', self.clair_url, self.name]):
             cli = ClairCli()
             cli.run()
