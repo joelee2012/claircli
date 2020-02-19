@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 
 class ClairCli(object):
     description = textwrap.dedent('''
-    Command line tool to interact with CoreOS Clair, analyze docker image with
-    clair in different ways''')
+    Command line tool to interact with Quay Clair to analyze docker image
+    in different ways''')
     epilog = '''Examples:
 
     # analyze and output report to html
@@ -68,13 +68,14 @@ class ClairCli(object):
             description=self.description,
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog=self.epilog)
-        parser.add_argument(
-            '-V', '--version', action='version', version=__version__)
+
         parser.add_argument(
             '-c', '--clair', default='http://localhost:6060',
             help='clair url, default: %(default)s')
         parser.add_argument(
-            '-w', '--white-list', help='path to the whitelist file')
+            '-f', '--formats', choices=['html', 'json'],
+            action='append', default=['html'],
+            help='output report file with give format, default: %(default)s')
         parser.add_argument(
             '-T', '--threshold', choices=SEVERITIES,
             default='Unknown', metavar='THRESHOLD',
@@ -82,12 +83,7 @@ class ClairCli(object):
             ' above of threshold, will return non-zero, default: %(default)s'
             ', choices are: {}'.format(SEVERITIES))
         parser.add_argument(
-            '-f', '--formats', choices=['html', 'json'],
-            action='append', default=['html'],
-            help='output report file with give format, default: %(default)s')
-        parser.add_argument('-L', '--log-file', help='save log to file')
-        parser.add_argument(
-            '-d', '--debug', action='store_true', help='print more logs')
+            '-w', '--white-list', help='path to the whitelist file')
         group = parser.add_mutually_exclusive_group()
         group.add_argument(
             '-l', '--local-ip', help='ip address of local host')
@@ -97,10 +93,15 @@ class ClairCli(object):
             'treated as regular expression')
         parser.add_argument(
             '-i', '--insecure-registry', action='append',
-            dest='insec_regs', metavar='registry', default=[],
+            dest='insec_regs', metavar='REGISTRY', default=[],
             help='domain of insecure registry')
+        parser.add_argument('-L', '--log-file', help='save log to file')
         parser.add_argument(
-            'images', nargs='+', metavar='image',
+            '-d', '--debug', action='store_true', help='print more logs')
+        parser.add_argument(
+            '-V', '--version', action='version', version=__version__)
+        parser.add_argument(
+            'images', nargs='+', metavar='IMAGE',
             help='docker images or regular expression')
         parser.set_defaults(func=self.analyze_image)
         self.args = parser.parse_args()
