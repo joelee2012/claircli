@@ -250,6 +250,7 @@ class TestClairCli(ClairCmdTestBase):
             req_body = json.loads(responses.calls[index].request.body)
             self.assertEqual(req_body['Layer']['Name'], layer)
         self.assertTrue(isfile(self.html))
+        self.assertIn(self.reg, RemoteRegistry.insec_regs)
 
     @patch('docker.from_env')
     @responses.activate
