@@ -71,10 +71,12 @@ class RemoteRegistry(object):
     tokens = defaultdict(dict)
     token_pattern = re.compile(r'Bearer realm="(?P<realm>[^"]+)".*'
                                r'service="(?P<service>[^"]+).*')
+    insec_regs = set()
 
     def __init__(self, domain):
         self.domain = domain
-        self.url = 'https://{}/v2/'.format(self.domain)
+        schema = 'http' if domain in self.insec_regs else 'https'
+        self.url = '{}://{}/v2/'.format(schema, domain)
 
     def __str__(self):
         return self.domain
