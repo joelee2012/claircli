@@ -1,9 +1,12 @@
 [![Build Status](https://travis-ci.com/joelee2012/claircli.svg?branch=master)](https://travis-ci.com/joelee2012/claircli)
 [![Coverage Status](https://coveralls.io/repos/github/joelee2012/claircli/badge.svg?branch=master)](https://coveralls.io/github/joelee2012/claircli?branch=master)
 # claircli
-## claircli is a command line tool to interact with [Quay Clair](https://github.com/quay/clair)
-- analyze loacl/remote docker image with [Clair](https://github.com/quay/clair)
-- generate HTML/JSON report, the html report template is from [analysis-template.html](https://github.com/jgsqware/clairctl/blob/master/clair/templates/analysis-template.html)
+## claircli is a command line tool to interact with [Quay Clair](https://github.com/quay/clair), which has following functionalities:
+- analyze docker images in local host
+- analyze docker images in remote host
+- analyze docker images in secure/insecure registry
+- support threshold/whitelist for vulnerabilities
+- report to HTML/JSON, the html report is based on [template](https://github.com/jgsqware/clairctl/blob/master/clair/templates/analysis-template.html)
 
 # Installation
 
@@ -20,8 +23,7 @@ usage: claircli [-h] [-c CLAIR] [-f {html,json}] [-T THRESHOLD]
                 [-d] [-V]
                 IMAGE [IMAGE ...]
 
-Command line tool to interact with Quay Clair to analyze docker image
-in different ways
+Command line tool to interact with Quay Clair to analyze docker image in different ways
 
 positional arguments:
   IMAGE                 docker images or regular expression

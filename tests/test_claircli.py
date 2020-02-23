@@ -16,7 +16,10 @@ from claircli.cli import ClairCli
 from claircli.docker_image import Image
 from claircli.docker_registry import LocalRegistry, RemoteRegistry
 from claircli.report import Report, WhiteList
-from mock import patch
+try:
+    from unittest.mock import patch
+except:
+    from mock import patch
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +201,49 @@ class TestClairCli(ClairCmdTestBase):
             cli = ClairCli()
             cli.run()
         self.assert_called_with_url()
+        for index, layer in enumerate(self.layers, start=4):
+            self.assertEqual(
+                responses.calls[index].request.url, self.v1_analyze_url)
+            req_body = json.loads(responses.calls[index].request.body)
+            self.assertEqual(req_body['Layer']['Name'], layer)
+        self.assertTrue(isfile(self.html))
+
+    @responses.activate
+    def test_analyze_images_in_insecure_registry(self):
+
+        reg_url = 'http://%s/v2/' % self.reg
+        token_url = reg_url + 'token'
+        auth = 'Bearer realm="%s",service="%s"' % (token_url, self.reg)
+        headers = {'WWW-Authenticate': auth}
+        params = {'service': self.reg,
+                  'client_id': 'claircli',
+                  'scope': 'repository:%s:pull' % self.repo}
+        token_url = token_url + '?' + urlencode(params)
+        manifest_url = reg_url + 'org/image-name/manifests/version'
+        responses.reset()
+        responses.add(responses.GET, reg_url,
+                      json={'message': 'authentication required'},
+                      status=401, headers=headers)
+        responses.add(responses.GET, token_url,
+                      json={'token': 'test-token'}, status=200)
+
+        responses.add(responses.GET, manifest_url,
+                      json=self.manifest, status=200)
+        self.layers = [e['digest'] for e in self.manifest['layers']]
+        responses.add(responses.DELETE, '%s/%s' %
+                      (self.v1_analyze_url, self.layers[0]))
+        responses.add(responses.POST, self.v1_analyze_url)
+        responses.add(responses.GET, '%s/%s?features&vulnerabilities' %
+                      (self.v1_analyze_url, self.layers[-1]),
+                      json=self.origin_data)
+
+        with patch('sys.argv', ['claircli',  '-c',
+                                self.clair_url, '-i', self.reg, self.name]):
+            cli = ClairCli()
+            cli.run()
+        for index, url in enumerate([reg_url, token_url, manifest_url]):
+            self.assertEqual(responses.calls[index].request.url, url)
+
         for index, layer in enumerate(self.layers, start=4):
             self.assertEqual(
                 responses.calls[index].request.url, self.v1_analyze_url)

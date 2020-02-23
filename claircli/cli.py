@@ -22,9 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 class ClairCli(object):
-    description = textwrap.dedent('''
-    Command line tool to interact with Quay Clair to analyze docker image
-    in different ways''')
+    description = 'Command line tool to interact with Quay Clair' \
+                  ' to analyze docker image in different ways'
     epilog = '''Examples:
 
     # analyze and output report to html
