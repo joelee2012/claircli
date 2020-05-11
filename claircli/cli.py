@@ -163,7 +163,7 @@ class ClairCli(object):
                     '; found "%s"', domain_token)
             else:
                 RemoteRegistry.tokens[domain_token_split[0]] = {
-                    '': domain_token_split[1]
+                    '': 'Basic ' + domain_token_split[1]
                 }
 
         clair = Clair(args.clair)
