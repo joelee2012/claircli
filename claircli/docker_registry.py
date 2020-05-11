@@ -83,7 +83,8 @@ class RemoteRegistry(object):
 
     def get_auth(self, repository):
         if (
-                not self.tokens[self.domain].get(repository) and self.tokens[self.domain].get('')
+                not self.tokens[self.domain].get(repository) and
+                self.tokens[self.domain].get('')
         ):
             self.tokens[self.domain][repository] = \
                 'Basic ' + self.tokens[self.domain].get('')
