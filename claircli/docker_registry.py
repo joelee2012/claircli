@@ -82,8 +82,11 @@ class RemoteRegistry(object):
         return self.domain
 
     def get_auth(self, repository):
-        if not self.tokens[self.domain].get(repository) and self.tokens[self.domain].get(''):
-            self.tokens[self.domain][repository] = 'Basic ' + self.tokens[self.domain].get('')
+        if (
+                not self.tokens[self.domain].get(repository) and self.tokens[self.domain].get('')
+        ):
+            self.tokens[self.domain][repository] = \
+                'Basic ' + self.tokens[self.domain].get('')
         elif not self.tokens[self.domain].get(repository):
             resp = request('GET', self.url)
             if resp.status_code not in (200, 401):
