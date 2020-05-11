@@ -273,7 +273,10 @@ class TestClairCli(ClairCmdTestBase):
 
         with patch('sys.argv', ['claircli',  '-c',
                                 self.clair_url,
-                                '-k', self.reg + ':' + token, self.name]):
+                                '-k', self.reg + ':' + token,
+                                # Include a check for an ignored argument
+                                '-k', '1234',
+                                self.name]):
             cli = ClairCli()
             cli.run()
         for index, url in enumerate([manifest_url, ]):
