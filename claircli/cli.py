@@ -94,6 +94,10 @@ class ClairCli(object):
             '-i', '--insecure-registry', action='append',
             dest='insec_regs', metavar='REGISTRY', default=[],
             help='domain of insecure registry')
+        parser.add_argument(
+            '-k', '--registry-token', action='append',
+            dest='domain_tokens', default=[],
+            help='docker registry domain login token; in the form "domain:token"')
         parser.add_argument('-L', '--log-file', help='save log to file')
         parser.add_argument(
             '-d', '--debug', action='store_true', help='print more logs')
@@ -143,6 +147,12 @@ class ClairCli(object):
             registry = LocalRegistry(args.local_ip)
         elif args.regex:
             args.images = self.resolve_images(args.images)
+        for domain_token in args.domain_tokens:
+            domain_token_split = domain_token.split(':', 1)
+            if len(domain_token_split) != 2:
+                logger.warning('registry token must be in the form "domain:token"; found "%s"', domain_token)
+            else:
+                RemoteRegistry.tokens[domain_token_split[0]] = {'': domain_token_split[1], 'repo1': domain_token_split[1]}
 
         clair = Clair(args.clair)
         if args.white_list:
@@ -186,6 +196,7 @@ class ClairCli(object):
             except Exception as exp:
                 stats['IMAGES WERE ANALYZED WITH ERROR'].append(image.name)
                 logger.warning(str(exp))
+                logger.debug('Underlying problem:', exc_info=exp)
             finally:
                 image.clean()
         return self.print_stats(stats)
