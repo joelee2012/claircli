@@ -152,7 +152,7 @@ class ClairCli(object):
             if len(domain_token_split) != 2:
                 logger.warning('registry token must be in the form "domain:token"; found "%s"', domain_token)
             else:
-                RemoteRegistry.tokens[domain_token_split[0]] = {'': domain_token_split[1], 'repo1': domain_token_split[1]}
+                RemoteRegistry.tokens[domain_token_split[0]] = {'': domain_token_split[1]}
 
         clair = Clair(args.clair)
         if args.white_list:
