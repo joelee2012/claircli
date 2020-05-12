@@ -157,7 +157,11 @@ class ClairCli(object):
             args.images = self.resolve_images(args.images)
         for domain_token in args.domain_tokens:
             domain_token_split = domain_token.split(':', 1)
-            if len(domain_token_split) != 2:
+            if (
+                    len(domain_token_split) != 2 or
+                    not domain_token_split[0] or
+                    not domain_token_split[1]
+            ):
                 logger.warning(
                     'registry token value must be in the form "domain:token"' +
                     '; found "%s"', domain_token)

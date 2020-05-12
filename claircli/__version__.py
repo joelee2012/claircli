@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = '1.1.1'
+__version__ = '1.2'
 __title__ = 'claircli'
 __description__ = 'Command line tool to interact with Clair'
 __url__ = 'https://github.com/joelee2012/claircli'

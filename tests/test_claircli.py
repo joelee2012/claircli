@@ -274,8 +274,8 @@ class TestClairCli(ClairCmdTestBase):
         with patch('sys.argv', ['claircli',  '-c',
                                 self.clair_url,
                                 '-k', self.reg + ':' + token,
-                                # Include a check for an ignored argument
-                                '-k', '1234',
+                                # Include a check for ignored arguments
+                                '-k', '1234', '-k', 'ab:', '-k', ':',
                                 self.name]):
             cli = ClairCli()
             cli.run()
