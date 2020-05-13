@@ -252,6 +252,49 @@ class TestClairCli(ClairCmdTestBase):
         self.assertTrue(isfile(self.html))
         self.assertIn(self.reg, RemoteRegistry.insec_regs)
 
+    @responses.activate
+    def test_analyze_images_in_secure_registry(self):
+
+        reg_url = 'https://%s/v2/' % self.reg
+        token = 'just-some-auth-token-which-is-really-long'
+        auth = 'Basic %s' % token
+        headers = {'WWW-Authenticate': auth}
+        manifest_url = reg_url + 'org/image-name/manifests/version'
+        responses.reset()
+        responses.add(responses.GET, manifest_url,
+                      json=self.manifest, status=200, headers=headers)
+        self.layers = [e['digest'] for e in self.manifest['layers']]
+        responses.add(responses.DELETE, '%s/%s' %
+                      (self.v1_analyze_url, self.layers[0]))
+        responses.add(responses.POST, self.v1_analyze_url)
+        responses.add(responses.GET, '%s/%s?features&vulnerabilities' %
+                      (self.v1_analyze_url, self.layers[-1]),
+                      json=self.origin_data)
+
+        with patch('sys.argv', ['claircli',  '-c',
+                                self.clair_url,
+                                '-k', self.reg + ':' + token,
+                                # Include a check for ignored arguments
+                                '-k', '1234', '-k', 'ab:', '-k', ':',
+                                self.name]):
+            cli = ClairCli()
+            cli.run()
+        for index, url in enumerate([manifest_url, ]):
+            self.assertEqual(responses.calls[index].request.url, url)
+
+        for index, layer in enumerate(self.layers, start=2):
+            self.assertEqual(
+                responses.calls[index].request.url, self.v1_analyze_url)
+            req_body = json.loads(responses.calls[index].request.body)
+            self.assertEqual(req_body['Layer']['Name'], layer)
+        self.assertTrue(isfile(self.html))
+        self.assertEqual(0, len(RemoteRegistry.insec_regs))
+        self.assertIn(self.reg, RemoteRegistry.tokens)
+        self.assertIn('', RemoteRegistry.tokens[self.reg])
+        self.assertEqual(auth, RemoteRegistry.tokens[self.reg][''])
+        self.assertIn(self.repo, RemoteRegistry.tokens[self.reg])
+        self.assertEqual(auth, RemoteRegistry.tokens[self.reg][self.repo])
+
     @patch('docker.from_env')
     @responses.activate
     def test_analyze_local_images(self, mock_docker):
