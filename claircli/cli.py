@@ -183,7 +183,7 @@ class ClairCli(object):
                 for sub_image in image.images:
                     self._analyze_single_image(args, clair, sub_image, stats)
             else:
-              self._analyze_single_image(args, clair, image, stats)
+                self._analyze_single_image(args, clair, image, stats)
 
         return self.print_stats(stats)
 
