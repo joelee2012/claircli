@@ -207,14 +207,14 @@ class ClairCli(object):
         except exceptions.HTTPError as exp:
             if exp.response.status_code in [400, 404] and \
                 ('Not Found for url' in str(exp) or
-                'no such image' in str(exp)):
+                    'no such image' in str(exp)):
                 logger.warning('%s was not found', image)
                 stats['IMAGES COULD NOT BE FOUND'].append(image.name)
             else:
                 logger.warning('Could not analyze %s: Got response %d '
-                              'from clair with message: %s',
-                              image.name, exp.response.status_code,
-                              exp.response.text)
+                               'from clair with message: %s',
+                               image.name, exp.response.status_code,
+                               exp.response.text)
                 stats['IMAGES COULD NOT BE ANALYZED'].append(
                     image.name)
         except KeyboardInterrupt:

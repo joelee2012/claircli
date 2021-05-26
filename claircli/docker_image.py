@@ -9,6 +9,10 @@ from .docker_registry import DOCKER_HUP_REGISTRY, LocalRegistry, RemoteRegistry
 
 logger = logging.getLogger(__name__)
 
+MANIFEST_LIST_V2 = 'application/vnd.docker.distribution.manifest.list.v2+json'
+MANIFEST_V2 = 'application/vnd.docker.distribution.manifest.v2+json'
+
+
 class Image(object):
 
     def __init__(self, name, registry=None):
@@ -55,11 +59,12 @@ class Image(object):
             manifest = self.manifest
             if isinstance(self.registry, LocalRegistry):
                 pass
-            elif manifest['schemaVersion'] == 2 
-                and manifest['mediaType'] == 'application/vnd.docker.distribution.manifest.list.v2+json':
+            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] \
+                    == MANIFEST_LIST_V2:
                 for single_manifest in manifest['manifests']:
                     reg, repo, _tag = self.parse_id(self.name)
-                    images_list.append(Image('{}/{}@{}'.format(reg, repo, single_manifest['digest'])))
+                    images_list.append(Image('{}/{}@{}'.format(
+                        reg, repo, single_manifest['digest'])))
             self._images = images_list
         return self._images
 
@@ -73,10 +78,13 @@ class Image(object):
             elif manifest['schemaVersion'] == 1:
                 self._layers = [e['blobSum']
                                 for e in manifest['fsLayers']][::-1]
-            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] == 'application/vnd.docker.distribution.manifest.v2+json':
+            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] \
+                    == MANIFEST_V2:
                 self._layers = [e['digest'] for e in manifest['layers']]
-            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] == 'application/vnd.docker.distribution.manifest.list.v2+json':
-                # Do nothing at this time because we need to retrieve the rest of the images
+            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] \
+                    == MANIFEST_LIST_V2:
+                # Do nothing at this time because we
+                # need to retrieve the rest of the images
                 pass
             else:
                 raise ValueError(
