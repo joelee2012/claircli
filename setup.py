@@ -12,6 +12,10 @@ requires = [
     'colorlog',
 ]
 
+test_requirements = [
+    'responses'
+]
+
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 with open(os.path.join(here, 'claircli', '__version__.py')) as f:
@@ -31,6 +35,7 @@ setup(
     author_email=about['__author_email__'],
     packages=['claircli'],
     install_requires=requires,
+    tests_require=test_requirements,
     license=about['__license__'],
     package_data={'': ['LICENSE'], 'claircli': ['templates/html-report.j2']},
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*,'

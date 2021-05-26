@@ -55,7 +55,8 @@ class Image(object):
             manifest = self.manifest
             if isinstance(self.registry, LocalRegistry):
                 pass
-            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] == 'application/vnd.docker.distribution.manifest.list.v2+json':
+            elif manifest['schemaVersion'] == 2 
+                and manifest['mediaType'] == 'application/vnd.docker.distribution.manifest.list.v2+json':
                 for single_manifest in manifest['manifests']:
                     reg, repo, _tag = self.parse_id(self.name)
                     images_list.append(Image('{}/{}@{}'.format(reg, repo, single_manifest['digest'])))

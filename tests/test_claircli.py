@@ -137,6 +137,26 @@ class TestImage(ClairCmdTestBase):
                          [e['digest'] for e in self.manifest['layers']])
         self.assert_called_with_url()
 
+    @responses.activate
+    def test_layers_list_v2(self):
+        list_image_manifest_url = self.reg_url + \
+            'org/image-name/manifests/sha256:d0fec089e611891a03f3282f10115bb186ed46093c3f083eceb250cee64b63eb'
+
+        with open('tests/test_data/manifest.list.v2.json') as f:
+            list_manifest = json.load(f)
+        with open('tests/test_data/manifest.list.v2-image.json') as f:
+            list_image_manifest = json.load(f)
+        responses.replace(responses.GET, self.manifest_url,
+                          json=list_manifest, status=200)
+        responses.add(responses.GET, list_image_manifest_url,
+                      json=list_image_manifest, status=200)
+        image = Image(self.name)
+        self.assertEqual(image.images[0].layers, [e['digest']
+                         for e in list_image_manifest['layers']])
+        self.assert_called_with_url()
+        self.assertEqual(
+            responses.calls[3].request.url, list_image_manifest_url)
+
 
 class TestClair(ClairCmdTestBase):
 

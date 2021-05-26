@@ -118,7 +118,9 @@ class RemoteRegistry(object):
         return resp.json()
 
     def get_blobs_url(self, image, layer):
-        return '/'.join(f.strip('/') for f in [self.url, image.repository, 'blobs', layer])
+        return '/'.join(f.strip('/') for f in [
+            self.url, image.repository, 'blobs', layer
+        ])
 
     def find_images(self, repository, tag):
         if self.domain == DOCKER_HUP_REGISTRY:
