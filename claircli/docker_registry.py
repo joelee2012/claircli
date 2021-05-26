@@ -13,8 +13,6 @@ import weakref
 from collections import defaultdict
 from os.path import isfile, join
 
-from urllib import parse
-
 import docker
 from six.moves.BaseHTTPServer import HTTPServer
 
