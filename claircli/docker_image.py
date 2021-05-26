@@ -83,9 +83,7 @@ class Image(object):
                 self._layers = [e['digest'] for e in manifest['layers']]
             elif manifest['schemaVersion'] == 2 and manifest['mediaType'] \
                     == MANIFEST_LIST_V2:
-                # Do nothing at this time because we
-                # need to retrieve the rest of the images
-                pass
+                self._layers = []
             else:
                 raise ValueError(
                     'Wrong schemaVersion [%s]' % manifest['schemaVersion'])

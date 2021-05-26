@@ -64,8 +64,8 @@ class ClairCmdTestBase(unittest.TestCase):
 
     def tearDown(self):
         RemoteRegistry.tokens = defaultdict(dict)
-        if isfile(self.html):
-            os.remove(self.html)
+        # if isfile(self.html):
+        #     os.remove(self.html)
 
     def assert_called_with_url(self):
         self.assertEqual(responses.calls[0].request.url, self.reg_url)
@@ -99,6 +99,26 @@ class TestImage(ClairCmdTestBase):
         image = Image(self.name)
         self.assertEqual(image.manifest, self.manifest)
         self.assert_called_with_url()
+
+    @responses.activate
+    def test_list_manifest(self):
+        with open('tests/test_data/manifest.list.v2.json') as f:
+            list_manifest = json.load(f)
+        responses.replace(responses.GET, self.manifest_url,
+                          json=list_manifest, status=200)
+        image = Image(self.name)
+        self.assertEqual(image.manifest, list_manifest)
+        self.assert_called_with_url()
+
+    @responses.activate
+    def test_unsupported_manifest(self):
+        with open('tests/test_data/manifest.unsupported.json') as f:
+            manifest = json.load(f)
+        responses.replace(responses.GET, self.manifest_url,
+                          json=manifest, status=200)
+        with self.assertRaises(ValueError):
+            image = Image(self.name)
+            image.layers
 
     @patch('docker.from_env')
     def test_manifest_local(self, mock_docker):
@@ -153,6 +173,7 @@ class TestImage(ClairCmdTestBase):
         image = Image(self.name)
         self.assertEqual(image.images[0].layers, [e['digest']
                          for e in list_image_manifest['layers']])
+        self.assertEqual(image.layers, [])
         self.assert_called_with_url()
         self.assertEqual(
             responses.calls[3].request.url, list_image_manifest_url)
@@ -216,7 +237,7 @@ class TestClairCli(ClairCmdTestBase):
 
     @responses.activate
     def test_analyze_images(self):
-        with patch('sys.argv', ['claircli',  '-c',
+        with patch('sys.argv', ['claircli', '-d', '-c',
                                 self.clair_url, self.name]):
             cli = ClairCli()
             cli.run()
@@ -335,4 +356,42 @@ class TestClairCli(ClairCmdTestBase):
                 responses.calls[index].request.url, self.v1_analyze_url)
             req_body = json.loads(responses.calls[index].request.body)
             self.assertEqual(req_body['Layer']['Name'], layer)
+        self.assertTrue(isfile(self.html))
+    
+
+    @responses.activate
+    def test_analyze_manifest_list(self):
+        list_image_manifest_url = self.reg_url + \
+            'org/image-name/manifests/sha256:d0fec089e611891a03f3282f10115bb186ed46093c3f083eceb250cee64b63eb'
+        with open('tests/test_data/manifest.list.v2.json') as f:
+            list_manifest = json.load(f)
+        with open('tests/test_data/manifest.list.v2-image.json') as f:
+            list_image_manifest = json.load(f)
+        with open('tests/test_data/origin_vulnerabilities_list.json') as f:
+            list_origin_data = json.load(f)
+        responses.add(responses.GET, '%s/%s?features&vulnerabilities' %
+                      (self.v1_analyze_url, list_origin_data['Layer']['Name']),
+                      json=list_origin_data)
+        responses.replace(responses.GET, self.manifest_url,
+                          json=list_manifest, status=200)
+        responses.add(responses.GET, list_image_manifest_url,
+                      json=list_image_manifest, status=200)
+        layers = [e['digest'] for e in list_image_manifest['layers']]
+        responses.add(responses.DELETE, '%s/%s' %
+                      (self.v1_analyze_url, layers[0]))
+        for layer in layers:
+            responses.add(responses.GET, '%s/%s' %
+                          (self.v1_analyze_url, layer))
+        with patch('sys.argv', ['claircli', '-d', '-c',
+                                self.clair_url, self.name]):
+            cli = ClairCli()
+            cli.run()
+        image = Image(self.name)
+        self.assert_called_with_url()
+        for index, layer in enumerate(image.images[0].layers, start=5):
+            self.assertEqual(
+                responses.calls[index].request.url, self.v1_analyze_url)
+            req_body = json.loads(responses.calls[index].request.body)
+            self.assertEqual(req_body['Layer']['Name'], layer)
+        self.html = Report.get_report_path('{}/{}@{}'.format(self.reg, self.repo, image.manifest['manifests'][0]['digest']), '.html')
         self.assertTrue(isfile(self.html))
