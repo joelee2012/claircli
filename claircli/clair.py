@@ -40,6 +40,12 @@ class Clair(object):
         return image.layers
 
     def get_report(self, image):
+        # Check whether we're examining a "fat manifest" or a regular image
+        if image.images:
+            reports = []
+            for sub_image in image.images:
+                reports.append(self.analyze_image(sub_image))
+            return reports
         logger.info('Fetch vulnerabilities for %s', image)
         report_url = '{}/{}?features&vulnerabilities'.format(
             self.api_v1_url, image.layers[-1])

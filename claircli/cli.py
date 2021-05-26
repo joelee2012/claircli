@@ -177,45 +177,55 @@ class ClairCli(object):
         stats = defaultdict(list)
         for index, image in enumerate(args.images, start=1):
             logger.info('{:*^60}'.format(index))
-            try:
-                clair.analyze_image(image)
-                report = clair.get_report(image)
-                if not report:
-                    stats['IMAGES WERE NOT SUPPORTED'].append(image.name)
-                    continue
-                report.process_data(args.threshold, args.white_list)
-                report.to_console()
-                for format_ in args.formats:
-                    report.to(format_)
-                if report.ok:
-                    stats['IMAGES WITHOUT DETECTED VULNERABILITIES'].append(
-                        image.name)
-                else:
-                    stats['IMAGES WITH DETECTED VULNERABILITIES'].append(
-                        image.name)
-            except exceptions.HTTPError as exp:
-                if exp.response.status_code in [400, 404] and \
-                    ('Not Found for url' in str(exp) or
-                     'no such image' in str(exp)):
-                    logger.warning('%s was not found', image)
-                    stats['IMAGES COULD NOT BE FOUND'].append(image.name)
-                else:
-                    logger.warning('Could not analyze %s: Got response %d '
-                                   'from clair with message: %s',
-                                   image.name, exp.response.status_code,
-                                   exp.response.text)
-                    stats['IMAGES COULD NOT BE ANALYZED'].append(
-                        image.name)
-            except KeyboardInterrupt:
-                logger.warning('Keyboard interrupted')
-                return 2
-            except Exception as exp:
-                stats['IMAGES WERE ANALYZED WITH ERROR'].append(image.name)
-                logger.warning(str(exp))
-                logger.debug('Underlying problem:', exc_info=exp)
-            finally:
-                image.clean()
+            # Check whether we're examining a "fat manifest" or a regular image
+            if image.images:
+                logger.info('Analyzing manifest list ("fat manifest")...')
+                for sub_image in image.images:
+                    self._analyze_single_image(args, clair, sub_image, stats)
+            else:
+              self._analyze_single_image(args, clair, image, stats)
+
         return self.print_stats(stats)
+
+    def _analyze_single_image(self, args, clair, image, stats):
+        try:
+            clair.analyze_image(image)
+            report = clair.get_report(image)
+            if not report:
+                stats['IMAGES WERE NOT SUPPORTED'].append(image.name)
+                return
+            report.process_data(args.threshold, args.white_list)
+            report.to_console()
+            for format_ in args.formats:
+                report.to(format_)
+            if report.ok:
+                stats['IMAGES WITHOUT DETECTED VULNERABILITIES'].append(
+                    image.name)
+            else:
+                stats['IMAGES WITH DETECTED VULNERABILITIES'].append(
+                    image.name)
+        except exceptions.HTTPError as exp:
+            if exp.response.status_code in [400, 404] and \
+                ('Not Found for url' in str(exp) or
+                'no such image' in str(exp)):
+                logger.warning('%s was not found', image)
+                stats['IMAGES COULD NOT BE FOUND'].append(image.name)
+            else:
+                logger.warning('Could not analyze %s: Got response %d '
+                              'from clair with message: %s',
+                              image.name, exp.response.status_code,
+                              exp.response.text)
+                stats['IMAGES COULD NOT BE ANALYZED'].append(
+                    image.name)
+        except KeyboardInterrupt:
+            logger.warning('Keyboard interrupted')
+            return 2
+        except Exception as exp:
+            stats['IMAGES WERE ANALYZED WITH ERROR'].append(image.name)
+            logger.warning(str(exp))
+            logger.debug('Underlying problem:', exc_info=exp)
+        finally:
+            image.clean()
 
     def print_stats(self, stats):
         total = sum(map(len, stats.values()))

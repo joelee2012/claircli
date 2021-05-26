@@ -13,6 +13,8 @@ import weakref
 from collections import defaultdict
 from os.path import isfile, join
 
+from urllib import parse
+
 import docker
 from six.moves.BaseHTTPServer import HTTPServer
 
@@ -111,13 +113,14 @@ class RemoteRegistry(object):
             self.url, image=image)
         headers = {'Accept':
                    'application/vnd.docker.distribution.manifest.v2+json,'
-                   'application/vnd.docker.distribution.manifest.v1+json',
+                   'application/vnd.docker.distribution.manifest.v1+json,'
+                   'application/vnd.docker.distribution.manifest.list.v2+json',
                    'Authorization': self.get_auth(image.repository)}
         resp = request_and_check('GET', url, headers=headers)
         return resp.json()
 
     def get_blobs_url(self, image, layer):
-        return '/'.join([self.url, image.repository, 'blobs', layer])
+        return '/'.join(f.strip('/') for f in [self.url, image.repository, 'blobs', layer])
 
     def find_images(self, repository, tag):
         if self.domain == DOCKER_HUP_REGISTRY:
