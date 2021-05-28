@@ -9,12 +9,16 @@ from .docker_registry import DOCKER_HUP_REGISTRY, LocalRegistry, RemoteRegistry
 
 logger = logging.getLogger(__name__)
 
+MANIFEST_LIST_V2 = 'application/vnd.docker.distribution.manifest.list.v2+json'
+MANIFEST_V2 = 'application/vnd.docker.distribution.manifest.v2+json'
+
 
 class Image(object):
 
     def __init__(self, name, registry=None):
         self.name = name
         self._layers = []
+        self._images = []
         self._manifest = None
         reg, repo, tag = self.parse_id(name)
         self.repository = repo
@@ -49,6 +53,22 @@ class Image(object):
         return self._manifest
 
     @property
+    def images(self):
+        if not self._images:
+            images_list = []
+            manifest = self.manifest
+            if isinstance(self.registry, LocalRegistry):
+                pass
+            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] \
+                    == MANIFEST_LIST_V2:
+                for single_manifest in manifest['manifests']:
+                    reg, repo, _tag = self.parse_id(self.name)
+                    images_list.append(Image('{}/{}@{}'.format(
+                        reg, repo, single_manifest['digest'])))
+            self._images = images_list
+        return self._images
+
+    @property
     def layers(self):
         if not self._layers:
             manifest = self.manifest
@@ -58,8 +78,12 @@ class Image(object):
             elif manifest['schemaVersion'] == 1:
                 self._layers = [e['blobSum']
                                 for e in manifest['fsLayers']][::-1]
-            elif manifest['schemaVersion'] == 2:
+            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] \
+                    == MANIFEST_V2:
                 self._layers = [e['digest'] for e in manifest['layers']]
+            elif manifest['schemaVersion'] == 2 and manifest['mediaType'] \
+                    == MANIFEST_LIST_V2:
+                self._layers = []
             else:
                 raise ValueError(
                     'Wrong schemaVersion [%s]' % manifest['schemaVersion'])

@@ -1,0 +1,9 @@
+venv/
+build/
+claircli.egg-info/
+dist/
+__pycache__/
+.coverage
+htmlcov/
+.eggs/
+.tox/

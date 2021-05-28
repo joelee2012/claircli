@@ -1,0 +1,66 @@
+{
+	"Layer": {
+		"Name": "sha256:debe3b1a97504955e5ff561633738d979a1e58861c3dffda3bd9dd59bf7b4d50",
+		"NamespaceName": "centos:7",
+		"ParentName": "sha256:04ef0e69dcba4088b009d14d21e86cda00ddbf8e84a4d9746c5d8ec9d61803af",
+		"IndexedByVersion": 3,
+		"Features": [
+			{
+				"Name": "python-devel",
+				"NamespaceName": "centos:7",
+				"VersionFormat": "rpm",
+				"Version": "2.7.5-68.el7",
+				"Vulnerabilities": [
+					{
+						"Name": "RHSA-2018:2123",
+						"NamespaceName": "centos:7",
+						"Description": "Python is an interpreted, interactive, object-oriented programming language, which includes modules, classes, exceptions, very high level dynamic data types and dynamic typing. Python supports interfaces to many system calls and libraries, as well as to various windowing systems. Security Fix(es): * A flaw was found in the way the DES/3DES cipher was used as part of the TLS/SSL protocol. A man-in-the-middle attacker could use this flaw to recover some plaintext data by capturing large amounts of encrypted traffic between TLS/SSL server and client if the communication used a DES/3DES based ciphersuite. (CVE-2016-2183) Note: This update modifies the Python ssl module to disable 3DES cipher suites by default. Red Hat would like to thank OpenVPN for reporting this issue. Upstream acknowledges Karthikeyan Bhargavan (Inria) and Gaëtan Leurent (Inria) as the original reporters.",
+						"Link": "https://access.redhat.com/errata/RHSA-2018:2123",
+						"Severity": "Medium",
+						"FixedBy": "0:2.7.5-69.el7_5"
+					},
+					{
+						"Name": "RHSA-2018:3041",
+						"NamespaceName": "centos:7",
+						"Description": "Python is an interpreted, interactive, object-oriented programming language, which includes modules, classes, exceptions, very high level dynamic data types and dynamic typing. Python supports interfaces to many system calls and libraries, as well as to various windowing systems. Security Fix(es): * python: DOS via regular expression backtracking in difflib.IS_LINE_JUNK method in difflib (CVE-2018-1061) * python: DOS via regular expression catastrophic backtracking in apop() method in pop3lib (CVE-2018-1060) For more details about the security issue(s), including the impact, a CVSS score, and other related information, refer to the CVE page(s) listed in the References section. Red Hat would like to thank the Python security response team for reporting these issues. Additional Changes: For detailed information on changes in this release, see the Red Hat Enterprise Linux 7.6 Release Notes linked from the References section.",
+						"Link": "https://access.redhat.com/errata/RHSA-2018:3041",
+						"Severity": "Medium",
+						"FixedBy": "0:2.7.5-76.el7"
+					}
+				],
+				"AddedBy": "sha256:b565332d1d45150165f73227d2ec4e6ef0127e7b55fac73a5131468b25bc4bfb"
+			},
+			{
+				"Name": "python-setuptools",
+				"NamespaceName": "centos:7",
+				"VersionFormat": "rpm",
+				"Version": "0.9.8-7.el7",
+				"AddedBy": "sha256:b565332d1d45150165f73227d2ec4e6ef0127e7b55fac73a5131468b25bc4bfb"
+			},
+			{
+				"Name": "python-backports",
+				"NamespaceName": "centos:7",
+				"VersionFormat": "rpm",
+				"Version": "1.0-8.el7",
+				"AddedBy": "sha256:b565332d1d45150165f73227d2ec4e6ef0127e7b55fac73a5131468b25bc4bfb"
+			},
+			{
+				"Name": "nss",
+				"NamespaceName": "centos:7",
+				"VersionFormat": "rpm",
+				"Version": "3.28.4-15.el7_4",
+				"Vulnerabilities": [
+					{
+						"Name": "RHSA-2018:2768",
+						"NamespaceName": "centos:7",
+						"Description": "Network Security Services (NSS) is a set of libraries designed to support the cross-platform development of security-enabled client and server applications. Security Fix(es): * nss: ServerHello.random is all zeros when handling a v2-compatible ClientHello (CVE-2018-12384) For more details about the security issue(s), including the impact, a CVSS score, and other related information, refer to the CVE page(s) listed in the References section. Red Hat would like to thank the Mozilla project for reporting this issue.",
+						"Link": "https://access.redhat.com/errata/RHSA-2018:2768",
+						"Severity": "Medium",
+						"FixedBy": "0:3.36.0-7.el7_5"
+					}
+				],
+				"AddedBy": "sha256:b565332d1d45150165f73227d2ec4e6ef0127e7b55fac73a5131468b25bc4bfb"
+			}
+		]
+	}
+}
