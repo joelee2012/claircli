@@ -1,11 +1,18 @@
-[![Build Status](https://travis-ci.com/joelee2012/claircli.svg?branch=master)](https://travis-ci.com/joelee2012/claircli)
+![Tests](https://github.com/joelee2012/claircli/workflows/Tests/badge.svg?branch=master)
+![CodeQL](https://github.com/joelee2012/claircli/workflows/CodeQL/badge.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/joelee2012/claircli/badge.svg?branch=master)](https://coveralls.io/github/joelee2012/claircli?branch=master)
+![PyPI](https://img.shields.io/pypi/v/claircli)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/claircli)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/claircli)
+![GitHub](https://img.shields.io/github/license/joelee2012/claircli)
+
 # claircli
 ## claircli is a command line tool to interact with [Quay Clair](https://github.com/quay/clair), which has following functionalities:
 - analyze docker images in local host
 - analyze docker images in remote host
 - analyze docker images in secure/insecure registry
 - support threshold/whitelist for vulnerabilities
+- support fat manifests
 - report to HTML/JSON, the html report is based on [template](https://github.com/jgsqware/clairctl/blob/master/clair/templates/analysis-template.html)
 
 # Installation
