@@ -1,4 +1,4 @@
-![Tests](https://github.com/joelee2012/claircli/workflows/Tests/badge.svg?branch=master)
+[![Tests](https://github.com/joelee2012/claircli/actions/workflows/tests.yml/badge.svg)](https://github.com/joelee2012/claircli/actions/workflows/tests.yml)
 ![CodeQL](https://github.com/joelee2012/claircli/workflows/CodeQL/badge.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/joelee2012/claircli/badge.svg?branch=master)](https://coveralls.io/github/joelee2012/claircli?branch=master)
 ![PyPI](https://img.shields.io/pypi/v/claircli)
@@ -18,7 +18,7 @@
 # Installation
 
 ```bash
-pip install claircli
+python3 -m pip install claircli
 ```
 
 # Commands
