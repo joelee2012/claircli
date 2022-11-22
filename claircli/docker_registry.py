@@ -50,7 +50,26 @@ class LocalRegistry(object):
             image_tar = join(repo_dir, 'image.tar')
             self.save_image(image, image_tar)
             with tarfile.open(image_tar) as tar:
-                tar.extractall(blobs_dir)
+                def is_within_directory(directory, target):
+                    
+                    abs_directory = os.path.abspath(directory)
+                    abs_target = os.path.abspath(target)
+                
+                    prefix = os.path.commonprefix([abs_directory, abs_target])
+                    
+                    return prefix == abs_directory
+                
+                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                
+                    for member in tar.getmembers():
+                        member_path = os.path.join(path, member.name)
+                        if not is_within_directory(path, member_path):
+                            raise Exception("Attempted Path Traversal in Tar File")
+                
+                    tar.extractall(path, members, numeric_owner=numeric_owner) 
+                    
+                
+                safe_extract(tar, blobs_dir)
             os.remove(image_tar)
             shutil.move(join(blobs_dir, 'manifest.json'), manifest_json)
         with open(manifest_json) as file_:
